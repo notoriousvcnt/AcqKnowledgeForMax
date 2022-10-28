@@ -17,16 +17,19 @@ Este repositorio contiene archivos de python para configurar remotamente el serv
 
 ###  A través de servidor TCP
 
-1. Ejecutar `python `/`singleconnection_TCP_MAX.py` . En la línea de comando se especifica el puerto al cual se debe conectar el cliente TCP (por defecto puerto 15020)
-2. Abrir `max`/ `AcqKnowledge_TCPClient_example.maxpat`.
-3. Encender cliente TCP (objeto [Sadam.tcpServer])
-4. Iniciar adquisición en AcqKnowledge.
+1. Abrir AcqKnowledge. Asegurarse que en preferencias está habilitado NDT (Display > Preferences.)
+
+2. Ejecutar `python `/`singleconnection_TCP_MAX.py` . En la línea de comando se especifica el puerto al cual se debe conectar el cliente TCP (por defecto puerto 15020)
+3. Abrir `max`/ `AcqKnowledge_TCPClient_example.maxpat`.
+4. Al abrir el parche de Max el cliente se activa automáticamente en el puerto 15020, por lo que no es necesario encenderlo. Es muy importante encender el cliente TCP antes de iniciar la adquisición en AcqKnowledge ya que no se permiten conexiones nuevas una vez que se están capturando los datos.
+5. Iniciar adquisición en AcqKnowledge.
 
 ### A través de protocolo OSC
 
-1. Abrir `max `/ `AcqKnowledge_OSC_example.maxpat`.
-2. Encender cliente OSC en Max.
-3. Ejecutar `python`/`singleconnection_TCP_OSC.py`. En la línea de comando se especifica el puerto al cual se debe conectar el cliente OSC (por defecto puerto 5005). La adquisición se inicia automáticamente una vez que la conexión al cliente de AcqKnowledge es exitosa.
+1. Abrir AcqKnowledge. Asegurarse que en preferencias está habilitado NDT (Display > Preferences.)
+2. Abrir `max `/ `AcqKnowledge_OSC_example.maxpat`.
+3. Encender cliente OSC en Max.
+4. Ejecutar `python`/`singleconnection_TCP_OSC.py`. En la línea de comando se especifica el puerto al cual se debe conectar el cliente OSC (por defecto puerto 5005). La adquisición se inicia automáticamente una vez que la conexión al cliente de AcqKnowledge es exitosa.
 
 
 
@@ -37,3 +40,5 @@ Este repositorio contiene archivos de python para configurar remotamente el serv
 * Limpiar código
   * ~~`singleconnection_TCP_OSC.py`: Añadir Callback `SendOSCData` y testear~~
   * general: comentar y borrar código innecesario
+* Configurar para desactivar auto-recovery
+* protocolo XML-RPC a través de node.js en MAX
