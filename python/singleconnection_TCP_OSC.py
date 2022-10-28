@@ -142,7 +142,7 @@ def main():
         #
         # dataServer.RegisterCallback("OutputToScreen",OSCClient.outputToScreen)
 
-        dataServer.RegisterCallback("SendOSCData",OSCClient.SendOSCData)
+        dataServer.RegisterCallback("SendOSCData",SendOSCData)
         
         # The AcqNdtChannelRecorder has a "Write" callback that we will
         # also register to record the channel data to the file on disk.

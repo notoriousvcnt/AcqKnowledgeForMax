@@ -35,5 +35,5 @@ Este repositorio contiene archivos de python para configurar remotamente el serv
 * Orden general de archivos
 * Documentación
 * Limpiar código
-  * `singleconnection_TCP_OSC.py`: Añadir Callback `SendOSCData` y testear
+  * ~~`singleconnection_TCP_OSC.py`: Añadir Callback `SendOSCData` y testear~~
   * general: comentar y borrar código innecesario
