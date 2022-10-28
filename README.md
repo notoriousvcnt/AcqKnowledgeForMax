@@ -7,7 +7,7 @@ Este repositorio contiene archivos de python para configurar remotamente el serv
 ## Requerimientos
 
 * Python 3.9:
-  * pythonosc
+  * python-osc
 * AcqKnowledge 5.0:
   * NDT
 * Max 8:
@@ -17,16 +17,16 @@ Este repositorio contiene archivos de python para configurar remotamente el serv
 
 ###  A través de servidor TCP
 
-1. Ejecutar `singleconnection_TCP_MAX.py` . En la línea de comando se especifica el puerto al cual se debe conectar el cliente TCP (por defecto puerto 15020)
-2. Abrir `AcqKnowledge_TCPClient_example.maxpat`.
+1. Ejecutar `python `/`singleconnection_TCP_MAX.py` . En la línea de comando se especifica el puerto al cual se debe conectar el cliente TCP (por defecto puerto 15020)
+2. Abrir `max`/ `AcqKnowledge_TCPClient_example.maxpat`.
 3. Encender cliente TCP (objeto [Sadam.tcpServer])
 4. Iniciar adquisición en AcqKnowledge.
 
 ### A través de protocolo OSC
 
-1. Abrir `AcqKnowledge_OSC_example.maxpat`.
+1. Abrir `max `/ `AcqKnowledge_OSC_example.maxpat`.
 2. Encender cliente OSC en Max.
-3. Ejecutar `singleconnection_TCP_OSC.py`. En la línea de comando se especifica el puerto al cual se debe conectar el cliente OSC (por defecto puerto 5005). La adquisición se inicia automáticamente una vez que la conexión al cliente de AcqKnowledge es exitosa.
+3. Ejecutar `python`/`singleconnection_TCP_OSC.py`. En la línea de comando se especifica el puerto al cual se debe conectar el cliente OSC (por defecto puerto 5005). La adquisición se inicia automáticamente una vez que la conexión al cliente de AcqKnowledge es exitosa.
 
 
 
