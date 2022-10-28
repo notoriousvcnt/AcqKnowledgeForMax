@@ -43,5 +43,3 @@ Este repositorio contiene archivos de python para configurar remotamente el serv
 <<<<<<< HEAD
 * Configurar para desactivar auto-recovery
 * protocolo XML-RPC a través de node.js en MAX
-=======
->>>>>>> d88fb3e3f96bba8d6697c139635c93e098ae81f9
