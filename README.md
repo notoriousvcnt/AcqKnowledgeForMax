@@ -1,6 +1,6 @@
 # AcqKnowledgeForMax
 
-AcqKnowledgeForMax es una serie de archivos para conectar el software AcqKnowledge con MaxMSP a través de NDT, usando TCP y/o OSC.
+AcqKnowledgeForMax es una serie de archivos para conectar el software AcqKnowledge con Max 8 a través de NDT, usando TCP y/o OSC.
 
 Este repositorio contiene archivos de python para configurar remotamente el servidor TCP de AcqKnowledge y existen versiones para enviar los datos a través de un servidor TCP a Max o a través del protocolo OSC. Parches de ejemplo en Max 8 también son incluidos.
 
@@ -40,5 +40,8 @@ Este repositorio contiene archivos de python para configurar remotamente el serv
 * Limpiar código
   * ~~`singleconnection_TCP_OSC.py`: Añadir Callback `SendOSCData` y testear~~
   * general: comentar y borrar código innecesario
+<<<<<<< HEAD
 * Configurar para desactivar auto-recovery
 * protocolo XML-RPC a través de node.js en MAX
+=======
+>>>>>>> d88fb3e3f96bba8d6697c139635c93e098ae81f9
