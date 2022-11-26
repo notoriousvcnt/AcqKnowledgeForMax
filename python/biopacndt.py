@@ -9,6 +9,8 @@ and functions for simplifying controlling remote AcqKnowledge instances
 and process binary data sent by AcqKnowledge to Python code over network 
 connections during data acquisitions.
 
+
+This program is an edited version of the original code provided by BIOPAC.
 Copyright (c) 2009-2010 BIOPAC Systems, Inc. All rights reserved.
 """
 
@@ -319,7 +321,7 @@ class AcqNdtServer:
         
             aCH.SamplingDivider = self.getDownsamplingDivider(aCH.GetSimpleChannelStruct())
             
-            #for simplicity only handle 64 bits native endian channels
+            #for simplicity only handle 32 bits big endian channels
             dataTypeStruct = {"type":"float","endian":"big"}
             self.changeDataType(aCH.GetSimpleChannelStruct(), dataTypeStruct)
             aCH.DataSize = 4 #data type size in bytes 32 bits
@@ -625,8 +627,9 @@ class AcqNdtDataServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         
                     [c]
         """
-        
-        self.OSCClient = udp_client.SimpleUDPClient('127.0.0.1', OSCport)
+
+        self.__OSCport = OSCport
+        self.OSCClient = udp_client.SimpleUDPClient('127.0.0.1', self.__OSCport)
 
         self.__enabledChannels = channels
         
@@ -738,6 +741,10 @@ class AcqNdtDataServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         """Return a list of AcqNdtChannel objects whose incoming data is processed by this object.
         """
         return self.__enabledChannels
+
+    def GetOSCPort(self):
+        """ Returns the port where the OSC client sends the acquired data. """
+        return self.__OSCport
     
     def Start(self):
         """Begin waiting to receive data from AcqKnowledge and processing incoming data.

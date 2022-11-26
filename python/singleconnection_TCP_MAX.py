@@ -2,17 +2,17 @@
 # encoding: utf-8
 
 """
-singleconnection.py
+singleconnection_TCP_MAX.py
 
-Illustrates data streaming from AcqKnowledge to Python client code
-using the single TCP connection mode.  This also illustrates using
-variable sampling rates and how the AcqNdtDataServer class delivers
-variable sampling rate data through its varying frames.
+This program ONLY prepares the AcqKnowledge server to send data via TCP in single connection mode. You need to configure an external server 
+which will receive the incoming data from AcqKnowledge via NDT using TCP protocol. 
 
-Note that in this example, all of the channels are downsampled, so
-the actual hardware frame count is skipped on every odd hardware sample
-index.
+Default Connection Host: 127.0.0.1
+Default Connection Port: 15020
 
+Both Host and Port can be changed using the commands specified in the NDT Documentation, which is available in AcqKnowledge software or Usage Guide.
+
+This program is an edited version from the original examples provided by BIOPAC.
 Copyright (c) 2009-2010 BIOPAC Systems, Inc. All rights reserved.
 """
 
@@ -39,27 +39,6 @@ if acqServer.getAcquisitionInProgress():
         acqServer.toggleAcquisition()
         print("Current data acquistion stopped") 
 
-# Send a template to AcqKnowledge.  We will send the template file
-# 'var-sample-no-base-rate.gtl' within the "resources" subdirectory.
-#
-# First construct a full path to this file on disk.
-
-resourcePath = os.getcwd() + os.sep + "resources"
-templateName = "BioHarnessTemplate.gtl"
-
-# Send the template to AcqKnowledge.  We will use the LoadTemplate()
-# member of the AcqNdtServer class.  This helper function will
-# read the file into local memory, encode it appropriately, and
-# transfer the data to AcqKnowledge.
-#
-# Note that capitalization is important!  The member function starts
-# with a capital "L".
-
-# print("Loading template %s" % templateName) 
-
-# acqServer.LoadTemplate(templateName)
-
-
 # change data connection method to single.  The single data connection
 # mode means that AcqKnowledge will make a single TCP network connection
 # to our client code to deliver the data, all channels being
@@ -81,7 +60,7 @@ enabledChannels = acqServer.DeliverAllEnabledChannels()
 # to establish its data connection
 
 singleConnectPort = acqServer.getSingleConnectionModePort()
-print('Servidor TCP conectado en el puerto %i' % (singleConnectPort))
+print('TCP Server connected on port %i' % (singleConnectPort))
 
 acqServer.changeDataConnectionHostname('127.0.0.1')        
 

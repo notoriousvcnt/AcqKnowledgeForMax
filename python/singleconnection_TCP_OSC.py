@@ -2,17 +2,18 @@
 # encoding: utf-8
 
 """
-singleconnection.py
+singleconnection_TCP_OSC.py
 
-Illustrates data streaming from AcqKnowledge to Python client code
-using the single TCP connection mode.  This also illustrates using
-variable sampling rates and how the AcqNdtDataServer class delivers
-variable sampling rate data through its varying frames.
+This program receives data streaming from AcqKnowledge to Python client code
+using the single TCP connection mode and then sends the data via OSC protocol.
 
-Note that in this example, all of the channels are downsampled, so
-the actual hardware frame count is skipped on every odd hardware sample
-index.
+Default TCP Connection Host: 127.0.0.1
+Default TCP Connection Port: 15020
 
+Default OSC Connection Host: 127.0.0.1
+Default OSC Connection Port: 5005
+
+This program is an edited version from the original examples provided by BIOPAC.
 Copyright (c) 2009-2010 BIOPAC Systems, Inc. All rights reserved.
 """
 
@@ -65,27 +66,8 @@ def main():
         
         # instruct AcqKnowledge to send us data for all of the channels being
         # acquired and retain the array of enabled channel objects.
-        
-       
-        # Send a template to AcqKnowledge.  We will send the template file
-        # 'var-sample-no-base-rate.gtl' within the "resources" subdirectory.
-        #
-        # First construct a full path to this file on disk.
-        
-        resourcePath = os.getcwd() + os.sep + "resources"
-        templateName = resourcePath + os.sep + "var-sample-no-base-rate.gtl"
 
-        # Send the template to AcqKnowledge.  We will use the LoadTemplate()
-        # member of the AcqNdtServer class.  This helper function will
-        # read the file into local memory, encode it appropriately, and
-        # transfer the data to AcqKnowledge.
-        #
-        # Note that capitalization is important!  The member function starts
-        # with a capital "L".
-        
-        # print("Loading template %s" % templateName)
-
-        # acqServer.LoadTemplate(templateName)
+        enabledChannels = acqServer.DeliverAllEnabledChannels()
 
         # change data connection method to single.  The single data connection
         # mode means that AcqKnowledge will make a single TCP network connection
@@ -95,24 +77,13 @@ def main():
         # When in 'single' mode, we only need one AcqNdtDataServer object
         # which will process all channels.
         
-        enabledChannels = acqServer.DeliverAllEnabledChannels()
+        
         
         # ask AcqKnowledge which TCP port number will be used when it tries
         # to establish its data connection
         
         singleConnectPort = acqServer.getSingleConnectionModePort()
-       
-        
-
-        # set up an AcqNdtChannelRecorder object to save the data of our
-        # first analog channel  on disk.  This will create the binary output
-        # file within the "resources" directory.
-        #
-        # The AcqNdtChannelRecorder takes a full absolute path to the destination
-        # file and the AcqNdtChannel object of the channel being recorded.
-        
-        channelToRecord = enabledChannels[0]
-            
+           
         # construct our AcqNdtDataServer object which receives data from
         # AcqKnowledge.  Since we're using 'single' connection mode, we only
         # need one AcqNdtDataServer object which will handle all of our channels.
@@ -126,26 +97,16 @@ def main():
         # The DeliverAllEnabledChannels() function returns a list of AcqNdtChannel
         # objects that ar enabled for acquisition, so we will pass in that
         # list from above.
-        
-        OSCClient = OSC_class()
-        print('Enviando datos a través de OSC al puerto %i' % (OSCClient.getPort()))
 
         dataServer = biopacndt.AcqNdtDataServer(singleConnectPort, enabledChannels,OSCport=5005)
+        print('Sending data to OSC port %i' % (dataServer.GetOSCPort()))
 
-
-        
         # add our callback functions to the AcqNdtDataServer to process
         # channel data as it is being received.
-        #
-        # We will register the "outputtoScreen" function, defined in this file,
-        # which will print out the data to the console as it comes in.
-        #
-        # dataServer.RegisterCallback("OutputToScreen",OSCClient.outputToScreen)
+ 
 
         dataServer.RegisterCallback("SendOSCData",SendOSCData)
         
-        # The AcqNdtChannelRecorder has a "Write" callback that we will
-        # also register to record the channel data to the file on disk.
         
         # start the data server.  The data server will start listening for
         # AcqKnowledge to make its data connection and, once data starts
@@ -195,95 +156,13 @@ def outputToScreen(index, frame, channelsInSlice):
                         in the frame tuple.
         """
         
-        # NOTE:  'index' is set to a hardware acquisition sample index.  In
-        # our sample data file, our acquisition sampling rate is 1kHz.
-        #
-        # Our sample data file uses variable sampling rates, and every
-        # channel is downsampled.  The highest channel sampling rate is
-        # only 500 Hz.  Therefore, every odd-indexed hardware sample position
-        # does not contain any data!
-        #
-        # If the frame would be empty at a particular hardware index, the
-        # callback does get invoked.  As a result, we won't see any odd
-        # values of 'index' in our callback.
-        
+        # NOTE:  'index' is set to a hardware acquisition sample index.
+    
         print("%s | %s" % (index, frame)) 
 
-class OSC_class:
-
-        def __init__(self,host='127.0.0.1',port=5005):
-                self.__port = port
-                self.__host = host
-                self.client = udp_client.SimpleUDPClient(self.__host, self.__port)
-
-        def getPort(self):
-                return self.__port
-
-        def getHost(self):
-                return self.__host
-
-        def outputToScreen(self,index, frame, channelsInSlice,OSCClient):
-                """Callback for use with an AcqNdtDataServer to display incoming channel data in the console.
-                
-                index:  hardware sample index of the frame passed to the callback.
-                                to convert to channel samples, divide by the SampleDivider out
-                                of the channel structure.
-                frame:  a tuple of doubles representing the amplitude of each channel
-                                at the hardware sample position in index.  The index of the
-                                amplitude in this tuple matches the index of the corresponding
-                                AcqNdtChannel structure in channelsInSlice
-                channelsInSlice:        a tuple of AcqNdtChannel objects indicating which
-                                channels were acquired in this frame of data.  The amplitude
-                                of the sample of the channel is at the corresponding location
-                                in the frame tuple.
-                """
-                
-                # NOTE:  'index' is set to a hardware acquisition sample index.  In
-                # our sample data file, our acquisition sampling rate is 1kHz.
-                #
-                # Our sample data file uses variable sampling rates, and every
-                # channel is downsampled.  The highest channel sampling rate is
-                # only 500 Hz.  Therefore, every odd-indexed hardware sample position
-                # does not contain any data!
-                #
-                # If the frame would be empty at a particular hardware index, the
-                # callback does get invoked.  As a result, we won't see any odd
-                # values of 'index' in our callback.
-                print("%s | %s" % (index, frame))
-
-        def SendOSCData(self,index, frame, channelsInSlice,OSCClient):
-                """Callback for use with an AcqNdtDataServer to display incoming channel data in the console.
-                
-                index:  hardware sample index of the frame passed to the callback.
-                                to convert to channel samples, divide by the SampleDivider out
-                                of the channel structure.
-                frame:  a tuple of doubles representing the amplitude of each channel
-                                at the hardware sample position in index.  The index of the
-                                amplitude in this tuple matches the index of the corresponding
-                                AcqNdtChannel structure in channelsInSlice
-                channelsInSlice:        a tuple of AcqNdtChannel objects indicating which
-                                channels were acquired in this frame of data.  The amplitude
-                                of the sample of the channel is at the corresponding location
-                                in the frame tuple.
-                """
-                
-                # NOTE:  'index' is set to a hardware acquisition sample index.  In
-                # our sample data file, our acquisition sampling rate is 1kHz.
-                #
-                # Our sample data file uses variable sampling rates, and every
-                # channel is downsampled.  The highest channel sampling rate is
-                # only 500 Hz.  Therefore, every odd-indexed hardware sample position
-                # does not contain any data!
-                #
-                # If the frame would be empty at a particular hardware index, the
-                # callback does get invoked.  As a result, we won't see any odd
-                # values of 'index' in our callback.
-                
-                msg = "%s %s %s %s %s %s %s" % (index, frame[0], frame[1], frame[2], frame[3], frame[4], frame[5])
-                self.client.send_message("/BioHarness", msg)
 
 def SendOSCData(self,index, frame, channelsInSlice,OSCClient):
-                """Callback for use with an AcqNdtDataServer to display incoming channel data in the console.
+                """Callback for use with an AcqNdtDataServer to send incoming channel data via OSC protocol.
                 
                 index:  hardware sample index of the frame passed to the callback.
                                 to convert to channel samples, divide by the SampleDivider out
@@ -296,19 +175,10 @@ def SendOSCData(self,index, frame, channelsInSlice,OSCClient):
                                 channels were acquired in this frame of data.  The amplitude
                                 of the sample of the channel is at the corresponding location
                                 in the frame tuple.
+                OSCClient: OSC client object from which the data will be sent to remote server.
                 """
                 
-                # NOTE:  'index' is set to a hardware acquisition sample index.  In
-                # our sample data file, our acquisition sampling rate is 1kHz.
-                #
-                # Our sample data file uses variable sampling rates, and every
-                # channel is downsampled.  The highest channel sampling rate is
-                # only 500 Hz.  Therefore, every odd-indexed hardware sample position
-                # does not contain any data!
-                #
-                # If the frame would be empty at a particular hardware index, the
-                # callback does get invoked.  As a result, we won't see any odd
-                # values of 'index' in our callback.
+                # NOTE:  'index' is set to a hardware acquisition sample index.
                 
                 msg = "%s %s %s %s %s %s %s" % (index, frame[0], frame[1], frame[2], frame[3], frame[4], frame[5])
                 OSCClient.send_message("/BioHarness", msg)
