@@ -31,15 +31,31 @@ Este repositorio contiene archivos de python para configurar remotamente el serv
 3. Encender cliente OSC en Max.
 4. Ejecutar `python`/`singleconnection_TCP_OSC.py`. En la línea de comando se especifica el puerto al cual se debe conectar el cliente OSC (por defecto puerto 5005). La adquisición se inicia automáticamente una vez que la conexión al cliente de AcqKnowledge es exitosa.
 
+## Cómo funciona
+
+
+
+## Archivos del proyecto
+
+### `python`
+
+### `max`
+
+### `resources`
+
+
+
+
+
 
 
 ## Pendientes
 
-* Orden general de archivos
+* ~~Orden general de archivos~~
 * Documentación
 * Limpiar código
   * ~~`singleconnection_TCP_OSC.py`: Añadir Callback `SendOSCData` y testear~~
-  * general: comentar y borrar código innecesario
-<<<<<<< HEAD
+  * ~~general: comentar y borrar código innecesario~~
+
 * Configurar para desactivar auto-recovery
 * protocolo XML-RPC a través de node.js en MAX
