@@ -33,17 +33,36 @@ Este repositorio contiene archivos de python para configurar remotamente el serv
 
 ## Cómo funciona
 
-
+TODO
 
 ## Archivos del proyecto
 
 ### `python`
 
+Contiene las implementaciones y ejemplos para recibir datos desde AcqKnowledge vía NDT a través de una conexión TCP. Estos archivos están basados en los ejemplos entregados por BIOPAC para trabajar con NDT y en particular están adaptados para manejar la información adquirida a través del sistema Zehpyr BioHarness, pero podría recibir información de otras configuraciones si se hacen los cambios correspondientes.
+
+* `biopacndt.py` : Implementación del módulo de Python biopacndt con clases y funciones que simplifican el control de instancias remotas de AcqKnowledge y procesamiento de datos binarios enviados por AcqKnowledge a través de internet.  Esta implementación ha sido desarrollada por BIOPAC y forma parte de los archivos de ejemplos de NDT disponibles en los archivos de AcqKnowledge pero ha sido modificada para funcionar en python 3.x y se ha agregado la funcionalidad de enviar la información fuera de python a través del protocol OSC.
+* `singleconnection_TCP_MAX.py`: Archivo de ejemplo para configurar servidor AcqKnowledge para envíar datos vía TCP en el modo 'single' (para modo 'multi' consultar documentación de NDT). Este programa **no** recibe información. La implementación del **cliente** que recibe la información debe ser configurada externamente. Por default la información es envíada hacia `127.0.0.1` en el puerto `15012` . 
+* `singleconnection_TCP_OSC.py`: Archivo de ejemplo para configurar y recibir información desde el servidor de AcqKnowledge vía TCP en el modo 'single' (para modo 'multi' consultar documentación de NDT) y posterior envío a través del protocolo OSC a la dirección `127.0.0.1` en el puerto `5005` con la etiqueta `/BioHarness`. 
+
 ### `max`
+
+Archivos de ejemplo para recibir los datos de AcqKnowledge en Max. En particular, están adaptados para manejar la información adquirida a través del sistema Zehpyr BioHarness, pero podría recibir información de otras configuraciones si se hacen los cambios correspondientes.
+
+* `AcqKnowledge_OSC_example.maxpat ` : Parche de ejemplo que recibe datos del archivo `python/singleconnection_TCP_OSC.py` a través de OSC. Este archivo está adaptado a recibir seis datos correspondiente al sistema Zephyr BioHarness, pero podría adaptarse a otras configuraciones de entradas.
+* `AcqKnowledge_TCPClient_example.maxpat` : Parche de ejemplo que recibe datos directamente desde el servidor de AcqKnowledge vía TCP y los decodifica según las configuraciones de bytes y *endianness* especificadas en la clase `AcqNdtServer` del archivo `biopacndt.py`.
+* `test_samplerate.maxpat` : Abstracción utilizada para medir la frecuencia de muestreo de una señal. Solo utilizado para fines de testeo, no afecta en el envío de datos desde AcqKnowledge.
 
 ### `resources`
 
+Archivos de utilidad.
 
+* `BioHarnessExampleData.acq` : Este archivo contiene información adquirida directamente desde el BioHarness usando seis entradas, útil para testear cadena de conexión si no se tiene acceso al BioHarness.
+* `BioHarnessTemplate6inputs.gtl` : Plantilla que contiene seis entradas del BioHarness. Útil para evitar la configuración de las entradas del BioHarness cada vez que se inicia AcqKnowledge.
+
+## Problemas conocidos
+
+TODO
 
 
 
@@ -53,9 +72,10 @@ Este repositorio contiene archivos de python para configurar remotamente el serv
 
 * ~~Orden general de archivos~~
 * Documentación
+  * especificar qué entradas se utilizan en los archivos de resources.
 * Limpiar código
   * ~~`singleconnection_TCP_OSC.py`: Añadir Callback `SendOSCData` y testear~~
   * ~~general: comentar y borrar código innecesario~~
 
-* Configurar para desactivar auto-recovery
+* Configurar para desactivar auto-recovery: necesito saber cuál es el puerto especificado en AcqKnowledge para configurar por default.
 * protocolo XML-RPC a través de node.js en MAX
