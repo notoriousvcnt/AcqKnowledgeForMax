@@ -1,5 +1,7 @@
 # AcqKnowledgeForMax : dev
 
+**Esta rama de desarrollo es para implementar funcionamiento similar a una aplicación de consola, el manual de uso como la descripción de archivos aún no está actualizado.**
+
 AcqKnowledgeForMax es una serie de archivos para conectar el software AcqKnowledge con Max 8 a través de Network Data Transfer (NDT), usando TCP y/o OSC. Es necesario tener una licencia de NDT para utilizar dicha funcionalidad en AcqKnowledge.
 
 Este repositorio contiene archivos de python para configurar remotamente el servidor TCP de AcqKnowledge y existen versiones para enviar los datos a través de un servidor TCP a Max o a través del protocolo OSC. Parches de ejemplo en Max 8 también son incluidos.
@@ -8,7 +10,7 @@ Los archivos `.py` son modificaciones de las implementaciones entregadas por BIO
 
 Por otra parte, los archivos `.maxpat` se encargan de recibir y decodificar la información entregada desde AcqKnowledge o Python (ver sección de Uso) usando la librería Sadam disponible en el Package Manager de Max.  Los parches están adaptados para recibir seis (6) entradas correspondientes al Zephyr BioHarness, pero puede adaptarse para otras configuraciones.
 
-**Esta rama de desarrollo es para implementar funcionamiento similar a una aplicación de consola, el manual de uso como la descripción de archivos aún no está actualizado.**
+
 
 ## Requerimientos
 
