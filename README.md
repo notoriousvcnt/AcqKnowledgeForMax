@@ -1,6 +1,6 @@
 # AcqKnowledgeForMax : dev
 
-**Esta rama de desarrollo es para implementar funcionamiento similar a una aplicación de consola, el manual de uso como la descripción de archivos aún no está actualizado.**
+**Esta rama de desarrollo es para implementar funcionamiento similar a una aplicación de consola, el manual de uso y la descripción de archivos aún no está actualizado.**
 
 AcqKnowledgeForMax es una serie de archivos para conectar el software AcqKnowledge con Max 8 a través de Network Data Transfer (NDT), usando TCP y/o OSC. Es necesario tener una licencia de NDT para utilizar dicha funcionalidad en AcqKnowledge.
 
