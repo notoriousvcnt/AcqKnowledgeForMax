@@ -33,13 +33,8 @@ import argparse
 from pythonosc import udp_client
 
 def main():     
-        """Execute the singleconnection sample applicaition.
-        
-        This loads a graph template that uses variable sampling rate
-        and acquires 3 analog channels, 3 digital channels, and 2
-        calculation channels.  The acquired data is printed to the
-        screen as well as saved into files on disk with raw binary
-        data.
+        """Execute the singleconnection mode for acquiring data from AcqKnowledge. It receives the data sent via TCP 
+        and then sends the data via OSC protocol.
         """
         
         # First we must locate an AcqKnowledge server, a computer that is

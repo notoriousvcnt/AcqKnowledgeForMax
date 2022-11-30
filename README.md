@@ -1,8 +1,12 @@
 # AcqKnowledgeForMax
 
-AcqKnowledgeForMax es una serie de archivos para conectar el software AcqKnowledge con Max 8 a través de NDT, usando TCP y/o OSC.
+AcqKnowledgeForMax es una serie de archivos para conectar el software AcqKnowledge con Max 8 a través de Network Data Transfer (NDT), usando TCP y/o OSC. Es necesario tener una licencia de NDT para utilizar dicha funcionalidad en AcqKnowledge.
 
 Este repositorio contiene archivos de python para configurar remotamente el servidor TCP de AcqKnowledge y existen versiones para enviar los datos a través de un servidor TCP a Max o a través del protocolo OSC. Parches de ejemplo en Max 8 también son incluidos.
+
+Los archivos `.py` son modificaciones de las implementaciones entregadas por BIOPAC al adquirir NDT. Gran parte del código se encarga de configurar el servidor para enviar la información de la forma requerida según el cliente a través del protocolo XML-RPC. El detalle de los comandos y sus funciones está extensamente documentado en el software AcqKnowledge o en el manual de uso en PDF de AcqKnowledge.
+
+Por otra parte, los archivos `.maxpat` se encargan de recibir y decodificar la información entregada desde AcqKnowledge o Python (ver sección de Uso) usando la librería Sadam disponible en el Package Manager de Max.  Los parches están adaptados para recibir seis (6) entradas correspondientes al Zephyr BioHarness, pero puede adaptarse para otras configuraciones.
 
 ## Requerimientos
 
@@ -14,6 +18,10 @@ Este repositorio contiene archivos de python para configurar remotamente el serv
   * Sadam Library 20.3.7 (disponible en el Package Manager)
 
 ## Uso
+
+Lo primero que se debe realizar es configurar el servidor de AcqKnowledge para enviar datos según la configuración deseable.  Esto se realiza a través del protocolo XML-RPC y se utiliza el código de Python implementado por BIOPAC (sólo modificado para que funcione en python 3.x).  La implementación de este repositorio configura el envío en modo 'single' y con entradas que posean la misma frecuencia de muestreo. Para más información sobre manejo de señales con frecuencia de muestreo variables revisar la documentación de NDT.
+
+A continuación se muestran dos formas de recibir los datos fuera de AcqKnowledge: a través de un servidor TCP directamente desde AcqKnowledge, y a través del protocolo OSC que utiliza como intermediario un servidor TCP implementado en python para recibir los datos desde AcqKnowledge y que luego se envían por OSC. **En ambos casos el archivo `.py` se encarga de configurar el servidor y prepararlo para el correcto envío de los datos**.  
 
 ###  A través de servidor TCP
 
@@ -30,10 +38,6 @@ Este repositorio contiene archivos de python para configurar remotamente el serv
 2. Abrir `max `/ `AcqKnowledge_OSC_example.maxpat`.
 3. Encender cliente OSC en Max.
 4. Ejecutar `python`/`singleconnection_TCP_OSC.py`. En la línea de comando se especifica el puerto al cual se debe conectar el cliente OSC (por defecto puerto 5005). La adquisición se inicia automáticamente una vez que la conexión al cliente de AcqKnowledge es exitosa.
-
-## Cómo funciona
-
-TODO
 
 ## Archivos del proyecto
 
@@ -58,24 +62,24 @@ Archivos de ejemplo para recibir los datos de AcqKnowledge en Max. En particular
 Archivos de utilidad.
 
 * `BioHarnessExampleData.acq` : Este archivo contiene información adquirida directamente desde el BioHarness usando seis entradas, útil para testear cadena de conexión si no se tiene acceso al BioHarness.
-* `BioHarnessTemplate6inputs.gtl` : Plantilla que contiene seis entradas del BioHarness. Útil para evitar la configuración de las entradas del BioHarness cada vez que se inicia AcqKnowledge.
+* `BioHarnessTemplate6inputs.gtl` : Plantilla para configurar y preparar seis entradas del BioHarness. Útil para evitar la configuración de las entradas del BioHarness cada vez que se inicia AcqKnowledge.
 
 ## Problemas conocidos
 
-TODO
-
-
+* No ha sido testeado en macOS.
 
 
 
 ## Pendientes
 
-* ~~Orden general de archivos~~
 * Documentación
+  
   * especificar qué entradas se utilizan en los archivos de resources.
-* Limpiar código
-  * ~~`singleconnection_TCP_OSC.py`: Añadir Callback `SendOSCData` y testear~~
-  * ~~general: comentar y borrar código innecesario~~
-
+  
 * Configurar para desactivar auto-recovery: necesito saber cuál es el puerto especificado en AcqKnowledge para configurar por default.
+
+* Re-escribir código para que funcionamiento sea similiar a una aplicación de consola. (utilizar https://github.com/jaimovier/MioConnect como ejemplo)
+
 * protocolo XML-RPC a través de node.js en MAX
+
+  
