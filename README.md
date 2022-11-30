@@ -8,6 +8,8 @@ Los archivos `.py` son modificaciones de las implementaciones entregadas por BIO
 
 Por otra parte, los archivos `.maxpat` se encargan de recibir y decodificar la información entregada desde AcqKnowledge o Python (ver sección de Uso) usando la librería Sadam disponible en el Package Manager de Max.  Los parches están adaptados para recibir seis (6) entradas correspondientes al Zephyr BioHarness, pero puede adaptarse para otras configuraciones.
 
+**Esta rama de desarrollo es para implementar funcionamiento similar a una aplicación de consola, el manual de uso como la descripción de archivos aún no está actualizado.**
+
 ## Requerimientos
 
 * Python 3.9:

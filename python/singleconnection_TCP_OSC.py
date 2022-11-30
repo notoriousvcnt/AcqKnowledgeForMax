@@ -33,106 +33,110 @@ import argparse
 from pythonosc import udp_client
 
 def main():     
-        """Execute the singleconnection mode for acquiring data from AcqKnowledge. It receives the data sent via TCP 
-        and then sends the data via OSC protocol.
-        """
-        
-        # First we must locate an AcqKnowledge server, a computer that is
-        # running AcqKnowledge with the networking feature and that is set
-        # to respond to autodiscovery requests.
-        #
-        # We will use the "quick connect" function which locates the
-        # first available AcqKnowledge on the network and returns an
-        # AcqNdtServer object for it.
-        
-        acqServer = biopacndt.AcqNdtQuickConnect()
-        if not acqServer:
-                print("No AcqKnowledge servers found!")
-                sys.exit()
-             
-        # Check if there is a data acquisition that is already running.
-        # In order to acquire data into a new template, we need to halt
-        # any previously running acquisition first.
-        
-        if acqServer.getAcquisitionInProgress():
-                acqServer.toggleAcquisition()
-                print("Current data acquistion stopped")
-        
-        
-        # instruct AcqKnowledge to send us data for all of the channels being
-        # acquired and retain the array of enabled channel objects.
+    """Execute the singleconnection mode for acquiring data from AcqKnowledge. It receives the data sent via TCP 
+    and then sends the data via OSC protocol.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-host","--hostname",help="AcqKnowledge Server Hostname",default="127.0.0.1")
+    parser.add_argument("-p","--port",help="AcqKnowledge Server Port",default=15020)
+    args = parser.parse_args()
 
-        enabledChannels = acqServer.DeliverAllEnabledChannels()
+    try:
+        #Trying to connect to specified server. QuickConnect option is not used due security reasons.
+        print("Intentando conectar al servidor AcqKnowledge en la dirección %s y puerto %s..." % (args.hostname,args.port))        
+        acqServer = biopacndt.AcqNdtServer(args.hostname, args.port)
+    except ConnectionRefusedError:
+        print("No se puede conectar al servidor especificado.")
+        sys.exit()
 
-        # change data connection method to single.  The single data connection
-        # mode means that AcqKnowledge will make a single TCP network connection
-        # to our client code to deliver the data, all channels being
-        # delivered over that same connection.
-        #
-        # When in 'single' mode, we only need one AcqNdtDataServer object
-        # which will process all channels.
-        
-        
-        
-        # ask AcqKnowledge which TCP port number will be used when it tries
-        # to establish its data connection
-        
-        singleConnectPort = acqServer.getSingleConnectionModePort()
-           
-        # construct our AcqNdtDataServer object which receives data from
-        # AcqKnowledge.  Since we're using 'single' connection mode, we only
-        # need one AcqNdtDataServer object which will handle all of our channels.
-        #
-        # The constructor takes the TCP port for the data connection and a list
-        # of AcqNdtChannel objects correpsonding to the channels whose data is
-        # being sent from AcqKnowledge.
-        #
-        # We got our TCP port above in the singleConnectionPort variable.
-        #
-        # The DeliverAllEnabledChannels() function returns a list of AcqNdtChannel
-        # objects that ar enabled for acquisition, so we will pass in that
-        # list from above.
+    try: 
+            # Check if there is a data acquisition that is already running.
+            # In order to acquire data into a new template, we need to halt
+            # any previously running acquisition first.
+            
+            if acqServer.getAcquisitionInProgress():
+                    acqServer.toggleAcquisition()
+                    print("Current data acquistion stopped")
+            
+            
+            # instruct AcqKnowledge to send us data for all of the channels being
+            # acquired and retain the array of enabled channel objects.
 
-        dataServer = biopacndt.AcqNdtDataServer(singleConnectPort, enabledChannels,OSCport=5005)
-        print('Sending data to OSC port %i' % (dataServer.GetOSCPort()))
+            enabledChannels = acqServer.DeliverAllEnabledChannels()
 
-        # add our callback functions to the AcqNdtDataServer to process
-        # channel data as it is being received.
- 
+            # change data connection method to single.  The single data connection
+            # mode means that AcqKnowledge will make a single TCP network connection
+            # to our client code to deliver the data, all channels being
+            # delivered over that same connection.
+            #
+            # When in 'single' mode, we only need one AcqNdtDataServer object
+            # which will process all channels.
+            
+            if acqServer.getDataConnectionMethod() != "single":
+                    acqServer.changeDataConnectionMethod("single")
+                    print("Data Connection Method Changed to: single")
+            
+            # ask AcqKnowledge which TCP port number will be used when it tries
+            # to establish its data connection
+            
+            singleConnectPort = acqServer.getSingleConnectionModePort()
+            
+            # construct our AcqNdtDataServer object which receives data from
+            # AcqKnowledge.  Since we're using 'single' connection mode, we only
+            # need one AcqNdtDataServer object which will handle all of our channels.
+            #
+            # The constructor takes the TCP port for the data connection and a list
+            # of AcqNdtChannel objects correpsonding to the channels whose data is
+            # being sent from AcqKnowledge.
+            #
+            # We got our TCP port above in the singleConnectionPort variable.
+            #
+            # The DeliverAllEnabledChannels() function returns a list of AcqNdtChannel
+            # objects that ar enabled for acquisition, so we will pass in that
+            # list from above.
 
-        dataServer.RegisterCallback("SendOSCData",SendOSCData)
-        
-        
-        # start the data server.  The data server will start listening for
-        # AcqKnowledge to make its data connection and, once data starts
-        # coming in, invoking our callbacks to process it.
-        #
-        # The AcqNdtDataServer must be started prior to initiating our
-        # data acquisition.
-        
-        dataServer.Start()
-        
-        # tell AcqKnowledge to begin acquiring data.
-        
-        acqServer.toggleAcquisition()
+            dataServer = biopacndt.AcqNdtDataServer(singleConnectPort, enabledChannels,OSCport=5005)
+            print('Sending data to OSC port %i' % (dataServer.GetOSCPort()))
 
-        # wait for AcqKnowledge to finish acquiring all of the data in the graph.
-        
-        acqServer.WaitForAcquisitionEnd()
-        
-        # give ourselves an additional 10 seconds to process any data that
-        # may have been sent at the end of the acquisition or is waiting
-        # in our data server queue.
-        time.sleep(10)
-        
-        # stop the AcqNdtDataServer after all of our incoming data has been
-        # processed.
-        
-        dataServer.Stop()
-        
-        # stop the AcqNdtChannelRecorder.  This will flush out any data to
-        # the file on disk with our first analog channel's binary data and
-        # close the file.
+            # add our callback functions to the AcqNdtDataServer to process
+            # channel data as it is being received.
+    
+
+            dataServer.RegisterCallback("SendOSCData",SendOSCData)
+            
+            
+            # start the data server.  The data server will start listening for
+            # AcqKnowledge to make its data connection and, once data starts
+            # coming in, invoking our callbacks to process it.
+            #
+            # The AcqNdtDataServer must be started prior to initiating our
+            # data acquisition.
+            
+            dataServer.Start()
+            
+            # tell AcqKnowledge to begin acquiring data.
+            
+            acqServer.toggleAcquisition()
+
+            # wait for AcqKnowledge to finish acquiring all of the data in the graph.
+            
+            acqServer.WaitForAcquisitionEnd()
+            
+            # give ourselves an additional 10 seconds to process any data that
+            # may have been sent at the end of the acquisition or is waiting
+            # in our data server queue.
+            time.sleep(10)
+            # stop the AcqNdtDataServer after all of our incoming data has been
+            # processed.             
+            dataServer.Stop()
+            
+            
+    except KeyboardInterrupt:
+            print("Proceso Interrumpido")
+            print("Desconenctando servidor AcqKnowledge...")
+            dataServer.Stop()
+            print("Servidor desconectado.")   
+              
                      
 
 def outputToScreen(index, frame, channelsInSlice):
