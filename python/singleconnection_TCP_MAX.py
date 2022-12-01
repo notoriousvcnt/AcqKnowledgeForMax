@@ -20,7 +20,6 @@ Copyright (c) 2009-2010 BIOPAC Systems, Inc. All rights reserved.
 
 from email.policy import default
 import sys
-import os
 import argparse
 import time
 
@@ -75,8 +74,14 @@ def main():
                 # to establish its data connection
 
                 singleConnectPort = acqServer.getSingleConnectionModePort()
-                acqServer.changeDataConnectionHostname(args.hostname) 
-                acqServer.ChangeDataConnectionPort(args.port)
+
+                if acqServer.changeDataConnectionHostname(args.hostname) != 0:
+                        print("No se puede realizar conexión al hostname %s" % (args.hostname))
+                        sys.exit()
+
+                if acqServer.ChangeDataConnectionPort(args.port) != 0:
+                        print("No se puede realizar conexión al puerto %s" % (args.port))
+                        sys.exit()
 
                 print('Servidor TCP disponible en hostname %s port %i' % (args.hostname, args.port))
 

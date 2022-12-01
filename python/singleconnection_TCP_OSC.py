@@ -20,8 +20,6 @@ Copyright (c) 2009-2010 BIOPAC Systems, Inc. All rights reserved.
 # import standard Python modules
 
 import sys
-import os
-import struct
 import time
 
 # import our biopacndt support module
@@ -116,7 +114,9 @@ def main():
             
             # tell AcqKnowledge to begin acquiring data.
             
-            acqServer.toggleAcquisition()
+            if acqServer.toggleAcquisition() != 0 and acqServer.getAcquisitionInProgress() == 0:
+                print("no se puede iniciar la adquisición de datos. Se cerrará el programa")
+                sys.exit()
 
             # wait for AcqKnowledge to finish acquiring all of the data in the graph.
             
