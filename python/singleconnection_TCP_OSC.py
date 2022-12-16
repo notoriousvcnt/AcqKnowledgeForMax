@@ -8,7 +8,7 @@ This program receives data streaming from AcqKnowledge to Python client code
 using the single TCP connection mode and then sends the data via OSC protocol.
 
 Default TCP Connection Host: 127.0.0.1
-Default TCP Connection Port: 15020
+Default TCP Connection Port: 15010
 
 Default OSC Connection Host: 127.0.0.1
 Default OSC Connection Port: 5005
@@ -36,7 +36,9 @@ def main():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("-host","--hostname",help="AcqKnowledge Server Hostname",default="127.0.0.1")
-    parser.add_argument("-p","--port",help="AcqKnowledge Server Port",default=15020)
+    parser.add_argument("-p","--port",help="AcqKnowledge Server Port",default=15010)
+    parser.add_argument("-oschost","--OSCHostname",help="OSC Server Hostname",default="127.0.0.1")
+    parser.add_argument("-oscp","--OSCPort",help="OSC Server Port",default=5005)
     args = parser.parse_args()
 
     try:
@@ -93,7 +95,7 @@ def main():
             # objects that ar enabled for acquisition, so we will pass in that
             # list from above.
 
-            dataServer = biopacndt.AcqNdtDataServer(singleConnectPort, enabledChannels,OSCport=5005)
+            dataServer = biopacndt.AcqNdtDataServer(singleConnectPort, enabledChannels,OSChostanme = args.OSCHostname,OSCport=int(args.OSCPort))
             print('Sending data to OSC port %i' % (dataServer.GetOSCPort()))
 
             # add our callback functions to the AcqNdtDataServer to process
@@ -160,7 +162,7 @@ def outputToScreen(index, frame, channelsInSlice):
         print("%s | %s" % (index, frame)) 
 
 
-def SendOSCData(self,index, frame, channelsInSlice,OSCClient):
+def SendOSCData(index, frame, channelsInSlice,OSCClient):
                 """Callback for use with an AcqNdtDataServer to send incoming channel data via OSC protocol.
                 
                 index:  hardware sample index of the frame passed to the callback.

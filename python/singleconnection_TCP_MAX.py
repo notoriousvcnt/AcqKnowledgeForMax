@@ -8,7 +8,7 @@ This program ONLY prepares the AcqKnowledge server to send data via TCP in singl
 which will receive the incoming data from AcqKnowledge via NDT using TCP protocol. 
 
 Default Connection Host: 127.0.0.1
-Default Connection Port: 15020
+Default Connection Port: 15010
 
 Both Host and Port can be changed using the commands specified in the NDT Documentation, which is available in AcqKnowledge software or Usage Guide.
 
@@ -29,7 +29,7 @@ import biopacndt
 def main():
         parser = argparse.ArgumentParser()
         parser.add_argument("-host","--hostname",help="AcqKnowledge Server Hostname",default="127.0.0.1")
-        parser.add_argument("-p","--port",help="AcqKnowledge Server Port",default=15020)
+        parser.add_argument("-p","--port",help="AcqKnowledge Server Port",default=15010)
         args = parser.parse_args()
 
         try:
@@ -79,7 +79,7 @@ def main():
                         print("No se puede realizar conexión al hostname %s" % (args.hostname))
                         sys.exit()
 
-                if acqServer.ChangeDataConnectionPort(args.port) != 0:
+                if acqServer.changeSingleConnectionModePort(args.port) != 0:
                         print("No se puede realizar conexión al puerto %s" % (args.port))
                         sys.exit()
 
@@ -92,7 +92,8 @@ def main():
         except KeyboardInterrupt:
                 if acqServer.getAcquisitionInProgress():
                         acqServer.toggleAcquisition()
-                        print("Deteniendo adquisición de Datos")
+                        # acqServer.__RPC.__close()
+                        print("La adquisición de datos ha sido detenida.")
                 else:
                         print("La adquisición ya fue detenida previamente, por lo que no se hará nada.")
 
