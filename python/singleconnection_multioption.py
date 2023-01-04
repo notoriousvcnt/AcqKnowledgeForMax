@@ -30,24 +30,24 @@ import argparse
 from pythonosc import udp_client
 
 def main():     
-    """Execute the singleconnection mode for acquiring data from AcqKnowledge. It receives the data sent via TCP 
-    and then sends the data via OSC protocol.
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-host","--hostname",help="AcqKnowledge Server Hostname",default="127.0.0.1")
-    parser.add_argument("-p","--port",help="AcqKnowledge Server Port",default=15010)
-    parser.add_argument("-oschost","--OSCHostname",help="OSC Server Hostname",default="127.0.0.1")
-    parser.add_argument("-oscp","--OSCPort",help="OSC Server Port",default=5005)
-    parser.add_argument("-osc","-oscActivated",help="Activates stream data via OSC",action="store_true")
-    args = parser.parse_args()
-
-    if args.osc:
+        """Execute the singleconnection mode for acquiring data from AcqKnowledge. It receives the data sent via TCP 
+        and then sends the data via OSC protocol.
+        """
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-controlPort","--controlTCPPort",help="Control TCP Port for XML-RPC.",default=15010)
+        parser.add_argument("-controlHost","--controlTCPHostname",help="Control TCP Hostname for XML-RPC.",default="127.0.0.1")
+        parser.add_argument("-host","--hostname",help="AcqKnowledge Server Hostname for Acquisition",default="127.0.0.1")
+        parser.add_argument("-p","--port",help="AcqKnowledge Server Port for Acquisition",default=15020)
+        parser.add_argument("-oschost","--OSCHostname",help="OSC Server Hostname",default="127.0.0.1")
+        parser.add_argument("-oscp","--OSCPort",help="OSC Server Port",default=5005)
+        parser.add_argument("-osc","-oscActivated",help="Activates stream data via OSC",action="store_true")
+        args = parser.parse_args()
 
         try:
                 #Trying to connect to specified server. QuickConnect option is not used due security reasons.
-                print("Se intentará enviar información via OSC")
-                print("Intentando conectar al servidor AcqKnowledge en la dirección %s y puerto %s..." % (args.hostname,args.port))        
-                acqServer = biopacndt.AcqNdtServer(args.hostname, args.port)
+                print("Intentando conectar al servidor AcqKnowledge a través de la conexión de control en la dirección %s y puerto %s..." \
+                         % (args.controlTCPHostname, args.controlTCPPort))        
+                acqServer = biopacndt.AcqNdtServer(args.controlTCPHostname, args.controlTCPPort)
         except ConnectionRefusedError:
                 print("No se puede conectar al servidor especificado.")
                 sys.exit()
@@ -83,130 +83,90 @@ def main():
                 # to establish its data connection
                 
                 singleConnectPort = acqServer.getSingleConnectionModePort()
+
+                if args.oscActivated:
+                        print("Se intentará enviar información via OSC")
+                        # construct our AcqNdtDataServer object which receives data from
+                        # AcqKnowledge.  Since we're using 'single' connection mode, we only
+                        # need one AcqNdtDataServer object which will handle all of our channels.
+                        #
+                        # The constructor takes the TCP port for the data connection and a list
+                        # of AcqNdtChannel objects correpsonding to the channels whose data is
+                        # being sent from AcqKnowledge.
+                        #
+                        # We got our TCP port above in the singleConnectionPort variable.
+                        #
+                        # The DeliverAllEnabledChannels() function returns a list of AcqNdtChannel
+                        # objects that ar enabled for acquisition, so we will pass in that
+                        # list from above.
+
+                        dataServer = biopacndt.AcqNdtDataServer(singleConnectPort, enabledChannels,OSCHostname = args.OSCHostname,OSCport=int(args.OSCPort))
+                        print('Sending data to OSC port %i' % (dataServer.GetOSCPort()))
+
+                        # add our callback functions to the AcqNdtDataServer to process
+                        # channel data as it is being received.
                 
-                # construct our AcqNdtDataServer object which receives data from
-                # AcqKnowledge.  Since we're using 'single' connection mode, we only
-                # need one AcqNdtDataServer object which will handle all of our channels.
-                #
-                # The constructor takes the TCP port for the data connection and a list
-                # of AcqNdtChannel objects correpsonding to the channels whose data is
-                # being sent from AcqKnowledge.
-                #
-                # We got our TCP port above in the singleConnectionPort variable.
-                #
-                # The DeliverAllEnabledChannels() function returns a list of AcqNdtChannel
-                # objects that ar enabled for acquisition, so we will pass in that
-                # list from above.
 
-                dataServer = biopacndt.AcqNdtDataServer(singleConnectPort, enabledChannels,OSChostanme = args.OSCHostname,OSCport=int(args.OSCPort))
-                print('Sending data to OSC port %i' % (dataServer.GetOSCPort()))
+                        dataServer.RegisterCallback("SendOSCData",SendOSCData)
+                        
+                        
+                        # start the data server.  The data server will start listening for
+                        # AcqKnowledge to make its data connection and, once data starts
+                        # coming in, invoking our callbacks to process it.
+                        #
+                        # The AcqNdtDataServer must be started prior to initiating our
+                        # data acquisition.
+                        
+                        dataServer.Start()
+                        
+                        # tell AcqKnowledge to begin acquiring data.
+                        
+                        if acqServer.toggleAcquisition() != 0 and acqServer.getAcquisitionInProgress() == 0:
+                                print("no se puede iniciar la adquisición de datos. Se cerrará el programa")
+                                sys.exit()
 
-                # add our callback functions to the AcqNdtDataServer to process
-                # channel data as it is being received.
-        
+                        # wait for AcqKnowledge to finish acquiring all of the data in the graph.
+                        
+                        acqServer.WaitForAcquisitionEnd()
+                        
+                        # give ourselves an additional 10 seconds to process any data that
+                        # may have been sent at the end of the acquisition or is waiting
+                        # in our data server queue.
+                        time.sleep(10)
+                        # stop the AcqNdtDataServer after all of our incoming data has been
+                        # processed.             
+                        dataServer.Stop()
+                else:
+                        print("Se intentará enviar información via TCP")
+                        if acqServer.changeDataConnectionHostname(args.hostname) != 0:
+                                print("No se puede realizar conexión al hostname %s" % (args.hostname))
+                                sys.exit()
 
-                dataServer.RegisterCallback("SendOSCData",SendOSCData)
-                
-                
-                # start the data server.  The data server will start listening for
-                # AcqKnowledge to make its data connection and, once data starts
-                # coming in, invoking our callbacks to process it.
-                #
-                # The AcqNdtDataServer must be started prior to initiating our
-                # data acquisition.
-                
-                dataServer.Start()
-                
-                # tell AcqKnowledge to begin acquiring data.
-                
-                if acqServer.toggleAcquisition() != 0 and acqServer.getAcquisitionInProgress() == 0:
-                        print("no se puede iniciar la adquisición de datos. Se cerrará el programa")
-                        sys.exit()
+                        if acqServer.changeSingleConnectionModePort(15020) != 0:
+                                print("No se puede realizar conexión al puerto %s" % (args.port))
+                                sys.exit()
 
-                # wait for AcqKnowledge to finish acquiring all of the data in the graph.
-                
-                acqServer.WaitForAcquisitionEnd()
-                
-                # give ourselves an additional 10 seconds to process any data that
-                # may have been sent at the end of the acquisition or is waiting
-                # in our data server queue.
-                time.sleep(10)
-                # stop the AcqNdtDataServer after all of our incoming data has been
-                # processed.             
-                dataServer.Stop()
-                
-                
-        except KeyboardInterrupt:
-                print("Proceso Interrumpido")
-                print("Desconenctando servidor AcqKnowledge...")
-                dataServer.Stop()
-                print("Servidor desconectado.")   
-    else:
-        try:    
-                print("Se intentará enviar información via TCP")
-                #Trying to connect to specified server. QuickConnect option is not used due security reasons.
-                print("Intentando conectar al servidor AcqKnowledge en la dirección %s y puerto %s..." % (args.hostname,args.port))        
-                acqServer = biopacndt.AcqNdtServer(args.hostname, args.port)
-        except ConnectionRefusedError:
-                print("No se puede conectar al servidor especificado.")
-                sys.exit()
-
-        try:
-                # Check if there is a data acquisition that is already running.
-                # In order to acquire data into a new template, we need to halt
-                # any previously running acquisition first.
-
-                if acqServer.getAcquisitionInProgress():
-                        acqServer.toggleAcquisition()
-                        print("Current data acquistion stopped") 
-
-                # change data connection method to single.  The single data connection
-                # mode means that AcqKnowledge will make a single TCP network connection
-                # to our client code to deliver the data, all channels being
-                # delivered over that same connection.
-
-                if acqServer.getDataConnectionMethod() != "single":
-                        acqServer.changeDataConnectionMethod("single")
-                        print("Data Connection Method Changed to: single")
-
-                # When in 'single' mode, we only need one AcqNdtDataServer object
-                # which will process all channels.
-
-                if acqServer.getDataConnectionMethod() != "single":
-                        acqServer.changeDataConnectionMethod("single")
-                        print("Data Connection Method Changed to: single") 
-
-                # instruct AcqKnowledge to send us data for all of the channels being
-                # acquired and retain the array of enabled channel objects.
-
-                enabledChannels = acqServer.DeliverAllEnabledChannels()
-
-                # ask AcqKnowledge which TCP port number will be used when it tries
-                # to establish its data connection
-
-                singleConnectPort = acqServer.getSingleConnectionModePort()
-
-                if acqServer.changeDataConnectionHostname(args.hostname) != 0:
-                        print("No se puede realizar conexión al hostname %s" % (args.hostname))
-                        sys.exit()
-
-                if acqServer.changeSingleConnectionModePort(args.port) != 0:
-                        print("No se puede realizar conexión al puerto %s" % (args.port))
-                        sys.exit()
-
-                print('Servidor TCP disponible en hostname %s port %i' % (args.hostname, args.port))
+                        print('Servidor TCP disponible en hostname %s port %i' % (args.hostname, 15020))
 
                 while True:
                         time.sleep(1)
-
-                
+                        
         except KeyboardInterrupt:
-                if acqServer.getAcquisitionInProgress():
-                        acqServer.toggleAcquisition()
-                        # acqServer.__RPC.__close()
-                        print("La adquisición de datos ha sido detenida.")
-                else:
-                        print("La adquisición ya fue detenida previamente, por lo que no se hará nada.")
+                print("Proceso Interrumpido")
+                print("Desconenctando servidor AcqKnowledge...")
+                try:
+                        if acqServer.getAcquisitionInProgress():
+                                acqServer.toggleAcquisition()
+                                # acqServer.__RPC.__close()
+                                print("La adquisición de datos ha sido detenida.")
+                        else:
+                                print("La adquisición ya fue detenida previamente, por lo que no se hará nada.")
+                        if args.oscActivated:
+                                dataServer.Stop()
+                        print("Servidor desconectado.") 
+                except ConnectionRefusedError:
+                        print("No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión.")
+                
 
                      
 
