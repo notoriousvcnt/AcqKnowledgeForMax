@@ -109,7 +109,7 @@ Options and arguments:
                 
                 singleConnectPort = acqServer.getSingleConnectionModePort()
 
-                if args.osc:
+                if args.oscActivated:
                         print("Se intentará enviar información via OSC")
                         # construct our AcqNdtDataServer object which receives data from
                         # AcqKnowledge.  Since we're using 'single' connection mode, we only
@@ -126,14 +126,11 @@ Options and arguments:
                         # list from above.
 
                         dataServer = biopacndt.AcqNdtDataServer(singleConnectPort, enabledChannels,OSCHostname = args.OSCHost,OSCport=int(args.OSCPort))
-                        print('Sending data to OSC port %i' % (dataServer.GetOSCPort()))
 
                         # add our callback functions to the AcqNdtDataServer to process
                         # channel data as it is being received.
-                
 
                         dataServer.RegisterCallback("SendOSCData",SendOSCData)
-                        
                         
                         # start the data server.  The data server will start listening for
                         # AcqKnowledge to make its data connection and, once data starts
@@ -143,7 +140,7 @@ Options and arguments:
                         # data acquisition.
                         
                         dataServer.Start()
-                        
+                        print("El servidor está listo para enviar la información. Enviando a través del puerto OSC  %i" % (dataServer.GetOSCPort()))
                         # tell AcqKnowledge to begin acquiring data.
                         
                         if acqServer.toggleAcquisition() != 0 and acqServer.getAcquisitionInProgress() == 0:
@@ -179,16 +176,19 @@ Options and arguments:
         except KeyboardInterrupt:
                 print("Proceso Interrumpido")
                 print("Desconenctando servidor AcqKnowledge...")
+                
                 try:
+                        
                         if acqServer.getAcquisitionInProgress():
                                 acqServer.toggleAcquisition()
                                 # acqServer.__RPC.__close()
                                 print("La adquisición de datos ha sido detenida.")
                         else:
                                 print("La adquisición ya fue detenida previamente, por lo que no se hará nada.")
-                        if args.osc:
+                        if args.oscActivated:
                                 dataServer.Stop()
-                        print("Servidor desconectado.") 
+                        print("Servidor desconectado.")
+                         
                 except ConnectionRefusedError:
                         print("No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión.")
 

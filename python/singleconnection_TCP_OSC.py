@@ -48,6 +48,7 @@ def main():
     except ConnectionRefusedError:
         print("No se puede conectar al servidor especificado.")
         sys.exit()
+        
 
     try: 
             # Check if there is a data acquisition that is already running.
@@ -96,7 +97,6 @@ def main():
             # list from above.
 
             dataServer = biopacndt.AcqNdtDataServer(singleConnectPort, enabledChannels,OSChostanme = args.OSCHostname,OSCport=int(args.OSCPort))
-            print('Sending data to OSC port %i' % (dataServer.GetOSCPort()))
 
             # add our callback functions to the AcqNdtDataServer to process
             # channel data as it is being received.
@@ -111,9 +111,9 @@ def main():
             #
             # The AcqNdtDataServer must be started prior to initiating our
             # data acquisition.
-            
+
             dataServer.Start()
-            
+            print("El servidor está listo para enviar la información. Enviando a través del puerto OSC  %i" % (dataServer.GetOSCPort()))
             # tell AcqKnowledge to begin acquiring data.
             
             if acqServer.toggleAcquisition() != 0 and acqServer.getAcquisitionInProgress() == 0:
