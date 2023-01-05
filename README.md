@@ -1,7 +1,5 @@
 # AcqKnowledgeForMax : dev
 
-**Esta rama de desarrollo es para implementar funcionamiento similar a una aplicación de consola, el manual de uso y la descripción de archivos aún no está actualizado.**
-
 AcqKnowledgeForMax es una serie de archivos para conectar el software AcqKnowledge con Max 8 a través de Network Data Transfer (NDT), usando TCP y/o OSC. Es necesario tener una licencia de NDT para utilizar dicha funcionalidad en AcqKnowledge.
 
 Este repositorio contiene archivos de python para configurar remotamente el servidor TCP de AcqKnowledge y existen versiones para enviar los datos a través de un servidor TCP a Max o a través del protocolo OSC. Parches de ejemplo en Max 8 también son incluidos.
@@ -46,7 +44,7 @@ A continuación se muestran dos formas de recibir los datos fuera de AcqKnowledg
 
 Adicionalmente,  se puede ejecutar ``singleconnection_multioption.py -h`` para ver todas los argumentos opcionales disponibles. Se pueden agregar los siguientes argumentos:
 
-``-h`` o ``--help``: Muestra esta lista.
+``-h`` o ``--help`` Muestra esta lista.
 
 ``-ch <hostname>``  o ``--controlHost <hostname>`` para configurar el hostname de control del servidor AcqKnowledge a través del protocolo XML-RPC.
 
@@ -69,8 +67,8 @@ Adicionalmente,  se puede ejecutar ``singleconnection_multioption.py -h`` para v
 Contiene las implementaciones y ejemplos para recibir datos desde AcqKnowledge vía NDT a través de una conexión TCP. Estos archivos están basados en los ejemplos entregados por BIOPAC para trabajar con NDT y en particular están adaptados para manejar la información adquirida a través del sistema Zehpyr BioHarness, pero podría recibir información de otras configuraciones si se hacen los cambios correspondientes.
 
 * `biopacndt.py` : Implementación del módulo de Python biopacndt con clases y funciones que simplifican el control de instancias remotas de AcqKnowledge y procesamiento de datos binarios enviados por AcqKnowledge a través de internet.  Esta implementación ha sido desarrollada por BIOPAC y forma parte de los archivos de ejemplos de NDT disponibles en los archivos de AcqKnowledge pero ha sido modificada para funcionar en python 3.x y se ha agregado la funcionalidad de enviar la información fuera de python a través del protocol OSC.
-* ``singleconnection_multioption.py``: Archivo de ejemplo para configurar y recibir información desde el servidor de AcqKnowledge en modo 'single connection' vía TCP o OSC con la etiqueta ``/BioHarness``.  Se puede ejecutar ``singleconnection_multioption.py -h`` para ver todas los argumentos opcionales disponibles.  
-  * En el caso del envío vía TCP el programa **no** recibe información. La implementación del **cliente** que recibe los datos está disponible en ``AcqKnowledge_TCPClient_example.maxpat`` . Por default la información es enviada hacia `127.0.0.1` en el puerto `15012` .
+* ``singleconnection_multioption.py``: Archivo de ejemplo para configurar y recibir información desde el servidor de AcqKnowledge en modo 'single connection' vía TCP o OSC.  Se puede ejecutar ``singleconnection_multioption.py -h`` para ver todas los argumentos opcionales disponibles.  
+  * En el caso del envío vía TCP el programa **no** recibe información. La implementación del **cliente** que recibe los datos está disponible en ``AcqKnowledge_TCPClient_example.maxpat`` . Por default la información es enviada hacia `127.0.0.1` en el puerto `15020` .
   * Si se ejecuta ``singleconnection_multioption.py -osc``  se realiza el envío de los datos a través del protocolo OSC a la dirección `127.0.0.1` en el puerto `5005` con la etiqueta `/BioHarness`. 
 
 ### `max`
@@ -105,5 +103,3 @@ Archivos de utilidad.
 ## Pendientes
 
 * protocolo XML-RPC a través de node.js en MAX
-
-  
