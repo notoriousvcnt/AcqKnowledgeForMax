@@ -813,8 +813,6 @@ class AcqNdtDataServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
                 # number of bytes to read #move the comment somewhere else
                 recvLen = (len(binaryFormat) - 1)*4
                 
-                
-    
                 # ignore request for zero bytes
                 if 0 != recvLen:
                     # read the bytes off the socket

@@ -40,26 +40,26 @@ def main():
 
 Options and arguments:
 -h   | --help: display this message
--ch  | --controlHost <hostname>: Hostname for Control AcqAcqKnowledge Server (XML-RPC).
--cp  | --controlPort <port>: Port for Control AcqAcqKnowledge Server (XML-RPC).
--ah  | --AcqHost <hostname>: Hostname for Acquisition Server.
--ap  | --AcqPort <port>: Port for Acquisition Server.
--osc | --oscActivated: Activates stream data via OSC.
--oh  | --OSCHost <hostname>: OSC Server Hostname (no effect if -osc flag is not activated).
--op  | --OSCport <port>: OSC Server Port (no effect if -osc flag is not activated).
+-ch  | --controlHost <hostname>: set hostname for Control AcqAcqKnowledge Server (XML-RPC).
+-cp  | --controlPort <port>: set port for Control AcqAcqKnowledge Server (XML-RPC).
+-ah  | --AcqHost <hostname>: set hostname for Acquisition Server.
+-ap  | --AcqPort <port>: set port for Acquisition Server.
+-osc | --oscActivated: activates stream data via OSC.
+-oh  | --OSCHost <hostname>: set OSC hostname (no effect if -osc flag is not activated).
+-op  | --OSCport <port>: set OSC port (no effect if -osc flag is not activated).
         """
         parser = argparse.ArgumentParser(usage=help_message,add_help=False)
         parser.add_argument("-h","--help",action='store_true',help=argparse.SUPPRESS)
         parser.add_argument("-ch","--controlHost",default="127.0.0.1",help=argparse.SUPPRESS)
-        parser.add_argument("-cp","--controlPort",default=15010,help=argparse.SUPPRESS)
+        parser.add_argument("-cp","--controlPort",default=15010,help=argparse.SUPPRESS,type=int)
         
         parser.add_argument("-ah","--AcqHost",default="127.0.0.1",help=argparse.SUPPRESS)
-        parser.add_argument("-ap","--AcqPort",default=15020,help=argparse.SUPPRESS)
+        parser.add_argument("-ap","--AcqPort",default=15020,help=argparse.SUPPRESS,type=int)
 
         parser.add_argument("-osc","--oscActivated",action="store_true",help=argparse.SUPPRESS)
 
         parser.add_argument("-oh","--OSCHost",default="127.0.0.1",help=argparse.SUPPRESS)
-        parser.add_argument("-op","--OSCPort",default=5005,help=argparse.SUPPRESS)
+        parser.add_argument("-op","--OSCPort",default=5005,help=argparse.SUPPRESS,type=int)
 
         
         args = parser.parse_args()
@@ -125,7 +125,7 @@ Options and arguments:
                         # objects that ar enabled for acquisition, so we will pass in that
                         # list from above.
 
-                        dataServer = biopacndt.AcqNdtDataServer(singleConnectPort, enabledChannels,OSCHostname = args.OSCHost,OSCport=int(args.OSCPort))
+                        dataServer = biopacndt.AcqNdtDataServer(singleConnectPort, enabledChannels,OSCHostname = args.OSCHost,OSCport=args.OSCPort)
 
                         # add our callback functions to the AcqNdtDataServer to process
                         # channel data as it is being received.
@@ -140,24 +140,10 @@ Options and arguments:
                         # data acquisition.
                         
                         dataServer.Start()
-                        print("El servidor está listo para enviar la información. Enviando a través del puerto OSC  %i" % (dataServer.GetOSCPort()))
-                        # tell AcqKnowledge to begin acquiring data.
+                        print("El servidor está listo para enviar la información a través del puerto OSC %i" % (dataServer.GetOSCPort()))
                         
-                        if acqServer.toggleAcquisition() != 0 and acqServer.getAcquisitionInProgress() == 0:
-                                print("no se puede iniciar la adquisición de datos. Se cerrará el programa")
-                                sys.exit()
-
-                        # wait for AcqKnowledge to finish acquiring all of the data in the graph.
-                        
-                        acqServer.WaitForAcquisitionEnd()
-                        
-                        # give ourselves an additional 10 seconds to process any data that
-                        # may have been sent at the end of the acquisition or is waiting
-                        # in our data server queue.
-                        time.sleep(10)
-                        # stop the AcqNdtDataServer after all of our incoming data has been
-                        # processed.             
-                        dataServer.Stop()
+                        while True:
+                                time.sleep(1)
                 else:
                         print("Se intentará enviar información via TCP")
                         if acqServer.changeDataConnectionHostname(args.AcqHost) != 0:
@@ -178,19 +164,23 @@ Options and arguments:
                 print("Desconenctando servidor AcqKnowledge...")
                 
                 try:
-                        
-                        if acqServer.getAcquisitionInProgress():
-                                acqServer.toggleAcquisition()
-                                # acqServer.__RPC.__close()
-                                print("La adquisición de datos ha sido detenida.")
-                        else:
-                                print("La adquisición ya fue detenida previamente, por lo que no se hará nada.")
                         if args.oscActivated:
+                                # Bad solution for bug about not closing when no data is received in the first place.
+                                # acqServer.toggleAcquisition()
+                                # dataServer.Stop()
+                                # acqServer.toggleAcquisition()
                                 dataServer.Stop()
                         print("Servidor desconectado.")
+
+                        if acqServer.getAcquisitionInProgress():
+                                acqServer.toggleAcquisition()
+                                print("La adquisición de datos ha sido detenida.")
+                        else:
+                                print("La adquisición ya fue detenida previamente, por lo que no se hará nada.")                      
                          
                 except ConnectionRefusedError:
                         print("No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión.")
+
 
 def SendOSCData(index, frame, channelsInSlice,OSCClient):
                 """Callback for use with an AcqNdtDataServer to send incoming channel data via OSC protocol.
