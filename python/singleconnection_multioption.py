@@ -33,14 +33,14 @@ def main():
         """Execute the singleconnection mode for acquiring data from AcqKnowledge. It receives the data sent via TCP 
         and then sends the data via OSC protocol.
         """
-        parser = argparse.ArgumentParser()
-        parser.add_argument("-controlPort","--controlTCPPort",help="Control TCP Port for XML-RPC.",default=15010)
+        parser = argparse.ArgumentParser("singleconnection_multioption.py",usage="[-h] [-controlPort CONTROLPORT] [-controlHost CONTROLHOST] [-host HOST] [-p P] [-oschost OSCHOST] [-oscp OSCP] [-osc]")
+        parser.add_argument("-controlPort","-controlTCPPort",help="Control TCP Port for XML-RPC.",default=15010,metavar='')
         parser.add_argument("-controlHost","--controlTCPHostname",help="Control TCP Hostname for XML-RPC.",default="127.0.0.1")
         parser.add_argument("-host","--hostname",help="AcqKnowledge Server Hostname for Acquisition",default="127.0.0.1")
         parser.add_argument("-p","--port",help="AcqKnowledge Server Port for Acquisition",default=15020)
         parser.add_argument("-oschost","--OSCHostname",help="OSC Server Hostname",default="127.0.0.1")
         parser.add_argument("-oscp","--OSCPort",help="OSC Server Port",default=5005)
-        parser.add_argument("-osc","-oscActivated",help="Activates stream data via OSC",action="store_true")
+        parser.add_argument("-osc","--oscActivated",help="Activates stream data via OSC",action="store_true")
         args = parser.parse_args()
 
         try:
@@ -84,7 +84,7 @@ def main():
                 
                 singleConnectPort = acqServer.getSingleConnectionModePort()
 
-                if args.oscActivated:
+                if args.osc:
                         print("Se intentará enviar información via OSC")
                         # construct our AcqNdtDataServer object which receives data from
                         # AcqKnowledge.  Since we're using 'single' connection mode, we only
@@ -161,35 +161,11 @@ def main():
                                 print("La adquisición de datos ha sido detenida.")
                         else:
                                 print("La adquisición ya fue detenida previamente, por lo que no se hará nada.")
-                        if args.oscActivated:
+                        if args.osc:
                                 dataServer.Stop()
                         print("Servidor desconectado.") 
                 except ConnectionRefusedError:
                         print("No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión.")
-                
-
-                     
-
-def outputToScreen(index, frame, channelsInSlice):
-        """Callback for use with an AcqNdtDataServer to display incoming channel data in the console.
-        
-        index:  hardware sample index of the frame passed to the callback.
-                        to convert to channel samples, divide by the SampleDivider out
-                        of the channel structure.
-        frame:  a tuple of doubles representing the amplitude of each channel
-                        at the hardware sample position in index.  The index of the
-                        amplitude in this tuple matches the index of the corresponding
-                        AcqNdtChannel structure in channelsInSlice
-        channelsInSlice:        a tuple of AcqNdtChannel objects indicating which
-                        channels were acquired in this frame of data.  The amplitude
-                        of the sample of the channel is at the corresponding location
-                        in the frame tuple.
-        """
-        
-        # NOTE:  'index' is set to a hardware acquisition sample index.
-    
-        print("%s | %s" % (index, frame)) 
-
 
 def SendOSCData(index, frame, channelsInSlice,OSCClient):
                 """Callback for use with an AcqNdtDataServer to send incoming channel data via OSC protocol.
@@ -210,7 +186,9 @@ def SendOSCData(index, frame, channelsInSlice,OSCClient):
                 
                 # NOTE:  'index' is set to a hardware acquisition sample index.
                 
-                msg = "%s %s %s %s %s %s %s" % (index, frame[0], frame[1], frame[2], frame[3], frame[4], frame[5])
+                msg = str(index)
+                for data in frame:
+                        msg += " " + str(data)
                 OSCClient.send_message("/BioHarness", msg)
                 
 if __name__ == '__main__':
