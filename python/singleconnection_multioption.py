@@ -33,21 +33,45 @@ def main():
         """Execute the singleconnection mode for acquiring data from AcqKnowledge. It receives the data sent via TCP 
         and then sends the data via OSC protocol.
         """
-        parser = argparse.ArgumentParser("singleconnection_multioption.py",usage="[-h] [-controlPort CONTROLPORT] [-controlHost CONTROLHOST] [-host HOST] [-p P] [-oschost OSCHOST] [-oscp OSCP] [-osc]")
-        parser.add_argument("-controlPort","-controlTCPPort",help="Control TCP Port for XML-RPC.",default=15010,metavar='')
-        parser.add_argument("-controlHost","--controlTCPHostname",help="Control TCP Hostname for XML-RPC.",default="127.0.0.1")
-        parser.add_argument("-host","--hostname",help="AcqKnowledge Server Hostname for Acquisition",default="127.0.0.1")
-        parser.add_argument("-p","--port",help="AcqKnowledge Server Port for Acquisition",default=15020)
-        parser.add_argument("-oschost","--OSCHostname",help="OSC Server Hostname",default="127.0.0.1")
-        parser.add_argument("-oscp","--OSCPort",help="OSC Server Port",default=5005)
-        parser.add_argument("-osc","--oscActivated",help="Activates stream data via OSC",action="store_true")
+        help_message = """usage: python singleconnection_multioption.py [-h | --help] [-ch | --controlHost <hostname>] [-cp | --controlPort  <port>] \
+[-ah | --AcqHost <hostname>] [-ap | --AcqPort <port>] 
+[-osc | --oscActivated] [-oh | --OSCHost <hostname>] [-op | --OSCport <port>]       
+
+Options and arguments:
+-h   | --help: display this message
+-ch  | --controlHost <hostname>: Hostname for Control AcqAcqKnowledge Server (XML-RPC).
+-cp  | --controlPort <port>: Port for Control AcqAcqKnowledge Server (XML-RPC).
+-ah  | --AcqHost <hostname>: Hostname for Acquisition Server.
+-ap  | --AcqPort <port>: Port for Acquisition Server.
+-osc | --oscActivated: Activates stream data via OSC.
+-oh  | --OSCHost <hostname>: OSC Server Hostname (no effect if -osc flag is not activated).
+-op  | --OSCport <port>: OSC Server Port (no effect if -osc flag is not activated).
+        """
+        parser = argparse.ArgumentParser(usage=help_message,add_help=False)
+        parser.add_argument("-h","--help",action='store_true',help=argparse.SUPPRESS)
+        parser.add_argument("-ch","--controlHost",default="127.0.0.1",help=argparse.SUPPRESS)
+        parser.add_argument("-cp","--controlPort",default=15010,help=argparse.SUPPRESS)
+        
+        parser.add_argument("-ah","--AcqHost",default="127.0.0.1",help=argparse.SUPPRESS)
+        parser.add_argument("-ap","--AcqPort",default=15020,help=argparse.SUPPRESS)
+
+        parser.add_argument("-osc","--oscActivated",action="store_true",help=argparse.SUPPRESS)
+
+        parser.add_argument("-oh","--OSCHost",default="127.0.0.1",help=argparse.SUPPRESS)
+        parser.add_argument("-op","--OSCPort",default=5005,help=argparse.SUPPRESS)
+
+        
         args = parser.parse_args()
+
+        if args.help:
+                print(help_message)
+                sys.exit()
 
         try:
                 #Trying to connect to specified server. QuickConnect option is not used due security reasons.
                 print("Intentando conectar al servidor AcqKnowledge a través de la conexión de control en la dirección %s y puerto %s..." \
-                         % (args.controlTCPHostname, args.controlTCPPort))        
-                acqServer = biopacndt.AcqNdtServer(args.controlTCPHostname, args.controlTCPPort)
+                         % (args.controlHost, args.controlPort))        
+                acqServer = biopacndt.AcqNdtServer(args.controlHost, args.controlPort)
         except ConnectionRefusedError:
                 print("No se puede conectar al servidor especificado.")
                 sys.exit()
@@ -100,7 +124,7 @@ def main():
                         # objects that ar enabled for acquisition, so we will pass in that
                         # list from above.
 
-                        dataServer = biopacndt.AcqNdtDataServer(singleConnectPort, enabledChannels,OSCHostname = args.OSCHostname,OSCport=int(args.OSCPort))
+                        dataServer = biopacndt.AcqNdtDataServer(singleConnectPort, enabledChannels,OSCHostname = args.OSCHost,OSCport=int(args.OSCPort))
                         print('Sending data to OSC port %i' % (dataServer.GetOSCPort()))
 
                         # add our callback functions to the AcqNdtDataServer to process
@@ -138,15 +162,15 @@ def main():
                         dataServer.Stop()
                 else:
                         print("Se intentará enviar información via TCP")
-                        if acqServer.changeDataConnectionHostname(args.hostname) != 0:
-                                print("No se puede realizar conexión al hostname %s" % (args.hostname))
+                        if acqServer.changeDataConnectionHostname(args.AcqHost) != 0:
+                                print("No se puede realizar conexión al hostname %s" % (args.AcqHost))
                                 sys.exit()
 
-                        if acqServer.changeSingleConnectionModePort(15020) != 0:
-                                print("No se puede realizar conexión al puerto %s" % (args.port))
+                        if acqServer.changeSingleConnectionModePort(args.AcqPort) != 0:
+                                print("No se puede realizar conexión al puerto %s" % (args.AcqPort))
                                 sys.exit()
 
-                        print('Servidor TCP disponible en hostname %s port %i' % (args.hostname, 15020))
+                        print('Servidor TCP disponible en hostname %s port %i' % (args.AcqHost, args.AcqPort))
 
                 while True:
                         time.sleep(1)
