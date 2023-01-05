@@ -30,9 +30,10 @@ import argparse
 from pythonosc import udp_client
 
 def main():     
-        """Execute the singleconnection mode for acquiring data from AcqKnowledge. It receives the data sent via TCP 
-        and then sends the data via OSC protocol.
+        """Execute the singleconnection mode for acquiring data from AcqKnowledge, and enables server to connect to external application. 
+        Alternatively, it receives the data sent via TCP and then sends the data via OSC protocol if -osc | --oscActivated flag is True.
         """
+
         help_message = """usage: python singleconnection_multioption.py [-h | --help] [-ch | --controlHost <hostname>] [-cp | --controlPort  <port>] \
 [-ah | --AcqHost <hostname>] [-ap | --AcqPort <port>] 
 [-osc | --oscActivated] [-oh | --OSCHost <hostname>] [-op | --OSCport <port>]       
