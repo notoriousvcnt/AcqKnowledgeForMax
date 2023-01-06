@@ -1,4 +1,4 @@
-# AcqKnowledgeForMax
+# AcqKnowledgeForMax : dev
 
 AcqKnowledgeForMax es una serie de archivos para conectar el software AcqKnowledge con Max 8 a través de Network Data Transfer (NDT), usando TCP y/o OSC. Es necesario tener una licencia de NDT para utilizar dicha funcionalidad en AcqKnowledge.
 
@@ -27,7 +27,7 @@ A continuación se muestran dos formas de recibir los datos fuera de AcqKnowledg
 
 1. Abrir AcqKnowledge. Asegurarse que en preferencias está habilitado NDT (Display > Preferences.)
 
-2. Ejecutar `python `/`singleconnection_TCP_MAX.py` . En la línea de comando se especifica el puerto al cual se debe conectar el cliente TCP (por defecto puerto 15020)
+2. Ejecutar `python `/`singleconnection_multioption.py` . 
 3. Abrir `max`/ `AcqKnowledge_TCPClient_example.maxpat`.
 4. Al abrir el parche de Max el cliente se activa automáticamente en el puerto 15020, por lo que no es necesario encenderlo. Es muy importante encender el cliente TCP antes de iniciar la adquisición en AcqKnowledge ya que no se permiten conexiones nuevas una vez que se están capturando los datos.
 5. Iniciar adquisición en AcqKnowledge.
@@ -37,7 +37,28 @@ A continuación se muestran dos formas de recibir los datos fuera de AcqKnowledg
 1. Abrir AcqKnowledge. Asegurarse que en preferencias está habilitado NDT (Display > Preferences.)
 2. Abrir `max `/ `AcqKnowledge_OSC_example.maxpat`.
 3. Encender cliente OSC en Max.
-4. Ejecutar `python`/`singleconnection_TCP_OSC.py`. En la línea de comando se especifica el puerto al cual se debe conectar el cliente OSC (por defecto puerto 5005). La adquisición se inicia automáticamente una vez que la conexión al cliente de AcqKnowledge es exitosa.
+4. Ejecutar `python`/`singleconnection_multioption.py` con el argumento opcional ``-osc`` . En la línea de comando se entrega la información sobre el puerto al cual se debe conectar el cliente OSC (por defecto puerto 5005). 
+5. Iniciar adquisición en AcqKnowledge.
+
+### Argumentos opcionales
+
+Adicionalmente,  se puede ejecutar ``singleconnection_multioption.py -h`` para ver todas los argumentos opcionales disponibles. Se pueden agregar los siguientes argumentos:
+
+``-h`` o ``--help`` Muestra esta lista.
+
+``-ch <hostname>``  o ``--controlHost <hostname>`` para configurar el hostname de control del servidor AcqKnowledge a través del protocolo XML-RPC.
+
+``-cp <port>``  o ``--controlPort <port>`` para configurar el puerto de control del servidor AcqKnowledge a través del protocolo XML-RPC.
+
+``-ah <hostname>``  o ``--AcqHost <hostname>`` para configurar el hostname del servidor TCP de Adquisición de Datos.
+
+``-ap <port>``  o ``--AcqPort <port>`` para configurar el puerto del servidor TCP de Adquisición de Datos.
+
+``-osc`` o ``--oscActivated`` para activar el envío de datos por OSC en vez de TCP.
+
+``-oh <hostname>``  o ``--OSCHost <hostname>`` para configurar el hostname de envío de datos vía OSC (sin efecto si no se especifica la opción ``--oscActivated``).
+
+``-op <port>``  o `` --OSCport <port>`` para configurar el puerto de envío de datos vía OSC (sin efecto si no se especifica la opción ``--oscActivated``).
 
 ## Archivos del proyecto
 
@@ -46,8 +67,9 @@ A continuación se muestran dos formas de recibir los datos fuera de AcqKnowledg
 Contiene las implementaciones y ejemplos para recibir datos desde AcqKnowledge vía NDT a través de una conexión TCP. Estos archivos están basados en los ejemplos entregados por BIOPAC para trabajar con NDT y en particular están adaptados para manejar la información adquirida a través del sistema Zehpyr BioHarness, pero podría recibir información de otras configuraciones si se hacen los cambios correspondientes.
 
 * `biopacndt.py` : Implementación del módulo de Python biopacndt con clases y funciones que simplifican el control de instancias remotas de AcqKnowledge y procesamiento de datos binarios enviados por AcqKnowledge a través de internet.  Esta implementación ha sido desarrollada por BIOPAC y forma parte de los archivos de ejemplos de NDT disponibles en los archivos de AcqKnowledge pero ha sido modificada para funcionar en python 3.x y se ha agregado la funcionalidad de enviar la información fuera de python a través del protocol OSC.
-* `singleconnection_TCP_MAX.py`: Archivo de ejemplo para configurar servidor AcqKnowledge para envíar datos vía TCP en el modo 'single' (para modo 'multi' consultar documentación de NDT). Este programa **no** recibe información. La implementación del **cliente** que recibe la información debe ser configurada externamente. Por default la información es envíada hacia `127.0.0.1` en el puerto `15012` . 
-* `singleconnection_TCP_OSC.py`: Archivo de ejemplo para configurar y recibir información desde el servidor de AcqKnowledge vía TCP en el modo 'single' (para modo 'multi' consultar documentación de NDT) y posterior envío a través del protocolo OSC a la dirección `127.0.0.1` en el puerto `5005` con la etiqueta `/BioHarness`. 
+* ``singleconnection_multioption.py``: Archivo de ejemplo para configurar y recibir información desde el servidor de AcqKnowledge en modo 'single connection' vía TCP o OSC.  Se puede ejecutar ``singleconnection_multioption.py -h`` para ver todas los argumentos opcionales disponibles.  
+  * En el caso del envío vía TCP el programa **no** recibe información. La implementación del **cliente** que recibe los datos está disponible en ``AcqKnowledge_TCPClient_example.maxpat`` . Por default la información es enviada hacia `127.0.0.1` en el puerto `15020` .
+  * Si se ejecuta ``singleconnection_multioption.py -osc``  se realiza el envío de los datos a través del protocolo OSC a la dirección `127.0.0.1` en el puerto `5005` con la etiqueta `/BioHarness`. 
 
 ### `max`
 
@@ -61,25 +83,23 @@ Archivos de ejemplo para recibir los datos de AcqKnowledge en Max. En particular
 
 Archivos de utilidad.
 
-* `BioHarnessExampleData.acq` : Este archivo contiene información adquirida directamente desde el BioHarness usando seis entradas, útil para testear cadena de conexión si no se tiene acceso al BioHarness.
-* `BioHarnessTemplate6inputs.gtl` : Plantilla para configurar y preparar seis entradas del BioHarness. Útil para evitar la configuración de las entradas del BioHarness cada vez que se inicia AcqKnowledge.
+* `BioHarnessTemplate6inputs.gtl` : Plantilla para configurar y preparar seis entradas del BioHarness. Útil para evitar la configuración de las entradas del BioHarness cada vez que se inicia AcqKnowledge. Contiene las siguientes entradas:
+  * A1 ECG Raw
+  * A2 Breathing Data
+  * A7 Posture
+  * A12 Y Acceleration Peak
+  * A14 X Acceleration Peak
+  * A16 Z Acceleration Peak
+
+* `BioHarnessExampleData.acq` : Este archivo contiene información adquirida directamente desde el BioHarness usando la plantilla `BioHarnessTemplate6inputs.gtl`, útil para testear cadena de conexión si no se tiene acceso al BioHarness.
 
 ## Problemas conocidos
 
 * No ha sido testeado en macOS.
-
-
+* Al enviar vía OSC se registran los siguientes problemas:
+  * si se termina la conexión antes de haber activado por lo menos una vez la adquisición de datos en AcqKnowledge el programa no puede cerrarse al utilizar Ctrl + C, por lo que se debe cerrar la terminal de manera forzada.
+  * No es posible reanudar el envío de datos una vez que es pausado en AcqKnowledge. Se debe cerrar la conexión (Ctrl+C) y abrirla de nuevo.
 
 ## Pendientes
 
-* Documentación
-  
-  * especificar qué entradas se utilizan en los archivos de resources.
-  
-* Configurar para desactivar auto-recovery: necesito saber cuál es el puerto especificado en AcqKnowledge para configurar por default.
-
-* Re-escribir código para que funcionamiento sea similiar a una aplicación de consola. (utilizar https://github.com/jaimovier/MioConnect como ejemplo)
-
 * protocolo XML-RPC a través de node.js en MAX
-
-  

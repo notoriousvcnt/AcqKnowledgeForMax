@@ -3,8 +3,8 @@
 		"fileversion" : 1,
 		"appversion" : 		{
 			"major" : 8,
-			"minor" : 3,
-			"revision" : 2,
+			"minor" : 5,
+			"revision" : 0,
 			"architecture" : "x64",
 			"modernui" : 1
 		}
@@ -581,7 +581,6 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 41.0, 125.0, 101.0, 48.0 ],
-					"presentation_linecount" : 3,
 					"text" : "Set port to listen on and Start the server."
 				}
 
@@ -1054,7 +1053,7 @@
 			}
 , 			{
 				"name" : "test_samplerate.maxpat",
-				"bootpath" : "D:/FREELANCE/2022/Emovere/Biopac-NDT_forMax/max",
+				"bootpath" : "D:/FREELANCE/2022/Emovere/AcqKnowledgeForMax/max",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1

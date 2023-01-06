@@ -226,14 +226,7 @@ class AcqNdtServer:
         fullList = self.__RPC.system.listMethods()
         #searches the full list of methods, if it starts with the acq namespace remove the acq prefix and add it to the list
         self.__rpcMethods = [m.replace(self.__acqRPCNamespace,"",1) for m in fullList if m.startswith(self.__acqRPCNamespace)]
-        
-        # Configure our fundamental binary data transfer type.  For ease
-        # of moving data into Python, we will always use TCP connections
-        # with double precision floating point delivery.
-        #
-        # Set the tcp mode here;  data type options will be set when the
-        # array of available channels is retrieved.
-        
+          
         #added by user
         self.__inBetweenMessageTime = 0.25 #time between messages, used in WaitForAcquisitionEnd function
         #always use tcp
@@ -602,7 +595,7 @@ class AcqNdtDataServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     used only during the acquisition.
     """
     
-    def __init__(self, port, channels,OSCport=5005):
+    def __init__(self, port, channels,OSCHostname,OSCport):
         """Default constructor.
         
         The arguments supplied to the constructor should vary depending on
@@ -629,7 +622,8 @@ class AcqNdtDataServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         """
 
         self.__OSCport = OSCport
-        self.OSCClient = udp_client.SimpleUDPClient('127.0.0.1', self.__OSCport)
+        self.__OSCHostname = OSCHostname
+        self.OSCClient = udp_client.SimpleUDPClient(self.__OSCHostname, self.__OSCport)
 
         self.__enabledChannels = channels
         
@@ -819,8 +813,6 @@ class AcqNdtDataServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
                 # number of bytes to read #move the comment somewhere else
                 recvLen = (len(binaryFormat) - 1)*4
                 
-                
-    
                 # ignore request for zero bytes
                 if 0 != recvLen:
                     # read the bytes off the socket
